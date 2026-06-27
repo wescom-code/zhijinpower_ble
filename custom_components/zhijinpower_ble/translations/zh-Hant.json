@@ -1,0 +1,77 @@
+{
+  "entity": {
+    "sensor": {
+      "battery_voltage": {
+        "name": "電池電壓"
+      },
+      "battery_percent": {
+        "name": "電池電量"
+      },
+      "charge_current": {
+        "name": "充電電流"
+      },
+      "solar_power": {
+        "name": "太陽能功率"
+      },
+      "discharge_current": {
+        "name": "放電電流"
+      },
+      "temperature": {
+        "name": "溫度"
+      },
+      "total_generation": {
+        "name": "累計發電量"
+      }
+    },
+    "binary_sensor": {
+      "solar_status": {
+        "name": "太陽能狀態"
+      },
+      "wind_status": {
+        "name": "風力狀態"
+      },
+      "load_status": {
+        "name": "負載狀態"
+      }
+    },
+    "number": {
+      "full_voltage": {
+        "name": "充滿停充電壓"
+      },
+      "cutoff_voltage": {
+        "name": "低電斷供電壓"
+      },
+      "recovery_voltage": {
+        "name": "低壓恢復電壓"
+      }
+    },
+    "select": {
+      "battery_type": {
+        "name": "電池類型",
+        "state": {
+          "Lithium": "鋰電池",
+          "Gel": "膠體電池",
+          "Lead-Acid": "鉛酸電池"
+        }
+      },
+      "output_mode": {
+        "name": "輸出模式",
+        "state": {
+          "Manual": "手動模式",
+          "Auto": "自動模式",
+          "Timer": "定時模式",
+          "Direct": "直出模式"
+        }
+      },
+      "voltage_detect_mode": {
+        "name": "系統電壓偵測"
+      }
+    },
+    "switch": {
+      "load_switch": {
+        "name": "負載開關"
+      }
+    }
+  },
+  "title": "ZhiJinPower BLE"
+}

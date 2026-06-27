@@ -1,0 +1,11 @@
+{
+  "domain": "zhijinpower_ble",
+  "name": "ZhiJinPower BLE",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": ["bluetooth"],
+  "documentation": "https://github.com/",
+  "iot_class": "local_polling",
+  "requirements": ["bleak>=0.21.0", "bleak-retry-connector>=3.0.0"],
+  "version": "1.0.0"
+}

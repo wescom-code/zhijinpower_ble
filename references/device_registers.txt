@@ -1,0 +1,47 @@
+=== RAW REGISTER MAPPINGS FROM APK ===
+These objects define the Modbus registers (racaddr), product IDs, and datatypes for various Zhijinpower devices.
+
+battery_type: {id:31,name:"\u7535\u6c60\u7c7b\u578b",en_name:"battery type",images:"",desciption:"\u7535\u6c60\u7c7b\u578b",unikey:"battery_type",racaddr:"1001",bytelen:2,product_id:8,modeltype:"1",datatype:"enum",definition:[{title:"\u80f6\u4f53\u7535\u6c60",value:"2",en_title:"Gel Battery"}
+
+cddl: {id:23,name:"\u5145\u7535\u7535\u6d41",en_name:"Charging current",images:"",desciption:"\u5145\u7535\u7535\u6d41",unikey:"cddl",racaddr:"0003",bytelen:2,product_id:8,modeltype:"1",datatype:"int",definition:[{title:"\u6700\u5927\u503c",value:"100000000"}
+
+cm_voltage: {id:34,name:"\u5145\u6ee1\u7535\u538b",en_name:"Full voltage",images:"",desciption:"\u5145\u6ee1\u7535\u538b",unikey:"cm_voltage",racaddr:"1004",bytelen:2,product_id:8,modeltype:"1",datatype:"float",definition:[{title:"\u6700\u5927\u503c",value:"1000"}
+
+dianya: {id:22,name:"\u7535\u6c60\u5f53\u524d\u7535\u538b",en_name:"Current battery voltage",images:"",desciption:"\u7535\u6c60\u5f53\u524d\u7535\u538b",unikey:"dianya",racaddr:"0002",bytelen:2,product_id:8,modeltype:"1",datatype:"int",definition:[{title:"\u6700\u5927\u503c",value:"1000"}
+
+fddl: {id:24,name:"\u653e\u7535\u7535\u6d41",en_name:"Discharge Current",images:"",desciption:"\u653e\u7535\u7535\u6d41",unikey:"fddl",racaddr:"0004",bytelen:2,product_id:8,modeltype:"1",datatype:"int",definition:[{title:"\u6700\u5927\u503c",value:"100000"}
+
+fz_output: {id:37,name:"\u8d1f\u8f7d\u8f93\u51fa",en_name:"load output",images:"",desciption:"\u8d1f\u8f7d\u8f93\u51fa",unikey:"fz_output",racaddr:"1007",bytelen:2,product_id:8,modeltype:"1",datatype:"enum",definition:[{title:"\u8d1f\u8f7d\u8f93\u51fa\u5173",value:"0",en_title:"close"}
+
+hf_out_voltage: {id:39,name:"\u6062\u590d\u653e\u7535\u7535\u538b",en_name:"Restore discharge voltage",images:"",desciption:"\u6062\u590d\u653e\u7535\u7535\u538b",unikey:"hf_out_voltage",racaddr:"1009",bytelen:2,product_id:8,modeltype:"1",datatype:"float",definition:[{title:"\u6700\u5927\u503c",value:"1000"}
+
+jz_voltage: {id:36,name:"\u622a\u6b62\u7535\u538b",en_name:"cutoff voltage",images:"",desciption:"\u622a\u6b62\u7535\u538b",unikey:"jz_voltage",racaddr:"1006",bytelen:2,product_id:8,modeltype:"1",datatype:"float",definition:[{title:"\u6700\u5927\u503c",value:"1000"}
+
+output_mode: {id:35,name:"\u8f93\u51fa\u6a21\u5f0f",en_name:"output mode",images:"",desciption:"\u8f93\u51fa\u6a21\u5f0f",unikey:"output_mode",racaddr:"1005",bytelen:2,product_id:8,modeltype:"1",datatype:"enum",definition:[{title:"\u624b\u52a8\u6a21\u5f0f",value:"0",en_title:"Manual mode"}
+
+power_status: {id:28,name:"\u98ce\u529b\u53d1\u7535\u72b6\u6001",en_name:"Wind power generation status",images:"",desciption:"\u98ce\u529b\u53d1\u7535\u72b6\u6001",unikey:"power_status",racaddr:"0008",bytelen:2,product_id:8,modeltype:"1",datatype:"boolean",definition:[{title:1,value:1}
+
+property_data: {realtime_power:{id:44,name:"\u5b9e\u65f6\u529f\u7387",en_name:"Real time power",images:"",desciption:"\u5b9e\u65f6\u529f\u7387",unikey:"realtime_power",racaddr:"0005",bytelen:2,product_id:9,modeltype:"1",datatype:"float",definition:[{title:"\u6700\u5927\u503c",value:"100000000"}
+
+property_data: {solar_model_type:{id:21,name:"\u592a\u9633\u80fd\u63a7\u5236\u5668\u7c7b\u578b",en_name:"Solar controller type",images:"",desciption:"\u592a\u9633\u80fd\u63a7\u5236\u5668\u7c7b\u578b",unikey:"solar_model_type",racaddr:"0001",bytelen:2,product_id:8,modeltype:"1",datatype:"enum",definition:[{title:"4G",value:"1",en_title:"4G"}
+
+property_data: {warning_message:{id:60,name:"\u8b66\u544a\u4fe1\u606f",en_name:"warning message",images:null,desciption:"\u8b66\u544a\u4fe1\u606f",unikey:"warning_message",racaddr:"0008",bytelen:2,product_id:11,modeltype:"1",datatype:"enum",definition:[{title:"\u7535\u6c60\u6b20\u538b",value:"0",en_title:"1"}
+
+solar_status: {id:26,name:"\u592a\u9633\u80fd\u677f\u5de5\u4f5c\u72b6\u6001",en_name:"Working status of solar panels",images:"",desciption:"\u592a\u9633\u80fd\u677f\u5de5\u4f5c\u72b6\u6001",unikey:"solar_status",racaddr:"0006",bytelen:2,product_id:8,modeltype:"1",datatype:"boolean",definition:[{title:1,value:1}
+
+temperature: {id:25,name:"\u6e29\u5ea6",en_name:"temperature",images:"",desciption:"\u6e29\u5ea6",unikey:"temperature",racaddr:"0005",bytelen:2,product_id:8,modeltype:"1",datatype:"float",definition:[{title:"\u6700\u5927\u503c",value:"0.00"}
+
+timing_hour: {id:32,name:"\u5b9a\u65f6\u65f6\u95f4\uff08\u5c0f\u65f6\uff09",en_name:"Timing time (hours)",images:"",desciption:"\u5b9a\u65f6\u65f6\u95f4\uff08\u5c0f\u65f6\uff09",unikey:"timing_hour",racaddr:"1002",bytelen:2,product_id:8,modeltype:"1",datatype:"int",definition:[{title:"\u6700\u5927\u503c",value:"12"}
+
+timing_min: {id:33,name:"\u5b9a\u65f6\u65f6\u95f4\uff08\u5206\u949f\uff09",en_name:"Timing time (minutes)",images:"",desciption:"\u5b9a\u65f6\u65f6\u95f4\uff08\u5206\u949f\uff09",unikey:"timing_min",racaddr:"1003",bytelen:2,product_id:8,modeltype:"1",datatype:"int",definition:[{title:"\u6700\u5927\u503c",value:"60"}
+
+total_power: {id:29,name:"\u7d2f\u8ba1\u5145\u7535\u91cf",en_name:"Accumulated charging",images:"",desciption:"\u7d2f\u8ba1\u5145\u7535\u91cf",unikey:"total_power",racaddr:"0009",bytelen:2,product_id:8,modeltype:"1",datatype:"int",definition:[{title:"\u6700\u5927\u503c",value:"1000000"}
+
+total_power_num: {id:30,name:"\u5145\u7535\u91cf\u6e05\u96f6\u6b21\u6570",en_name:"Charging reset numbers",images:"",desciption:"\u603b\u7d2f\u8ba1\u5145\u7535\u91cf=\u7d2f\u8ba1\u5145\u7535\u91cf\u6e05\u96f6\u6b21\u6570*1000+\u7d2f\u8ba1\u5145\u7535\u91cf\u3002\r\n\u592a\u9633\u80fd\u63a7\u5236\u5668\u53ea\u4e0a\u4f20\u7d2f\u8ba1\u5145\u7535\u91cf\u6e05\u96f6\u6b21\u6570",unikey:"total_power_num",racaddr:"000A",bytelen:2,product_id:8,modeltype:"1",datatype:"int",definition:[{title:"\u6700\u5927\u503c",value:"1000"}
+
+voltage_monitor_selected: {id:38,name:"\u7535\u538b\u68c0\u6d4b\u9009\u62e9",en_name:"Voltage detection selection",images:"",desciption:"\u7535\u538b\u68c0\u6d4b\u9009\u62e9",unikey:"voltage_monitor_selected",racaddr:"1008",bytelen:2,product_id:8,modeltype:"1",datatype:"enum",definition:[{title:"\u81ea\u52a8\u68c0\u6d4b",value:"0",en_title:"automatic detection"}
+
+warning_message: {id:47,name:"\u8b66\u544a\u4fe1\u606f",en_name:null,images:null,desciption:"\u8b66\u544a\u4fe1\u606f",unikey:"warning_message",racaddr:"000A",bytelen:2,product_id:9,modeltype:"1",datatype:"enum",definition:[{title:"\u5149\u4f0f\u6b20\u538b",value:"0",en_title:"1"}
+
+work_status: {id:27,name:"\u8d1f\u8f7d\u5de5\u4f5c\u72b6\u6001",en_name:"Load working state",images:"",desciption:"\u8d1f\u8f7d\u5de5\u4f5c\u72b6\u6001",unikey:"work_status",racaddr:"0007",bytelen:2,product_id:8,modeltype:"1",datatype:"boolean",definition:[{title:1,value:1}
+

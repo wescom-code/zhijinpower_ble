@@ -1,0 +1,7 @@
+{
+  "name": "ZhiJinPower BLE",
+  "render_readme": true,
+  "file_name": "zhijinpower_ble",
+  "iot_class": "Local Polling",
+  "domain": "zhijinpower_ble"
+}

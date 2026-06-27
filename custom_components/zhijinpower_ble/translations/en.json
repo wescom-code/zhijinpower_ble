@@ -1,0 +1,71 @@
+{
+  "entity": {
+    "sensor": {
+      "battery_voltage": {
+        "name": "Battery Voltage"
+      },
+      "battery_percent": {
+        "name": "Battery"
+      },
+      "charge_current": {
+        "name": "Charge Current"
+      },
+      "solar_power": {
+        "name": "Solar Power"
+      },
+      "discharge_current": {
+        "name": "Discharge Current"
+      },
+      "temperature": {
+        "name": "Temperature"
+      },
+      "total_generation": {
+        "name": "Total Generation"
+      }
+    },
+    "binary_sensor": {
+      "solar_status": {
+        "name": "Solar Status"
+      },
+      "wind_status": {
+        "name": "Wind Status"
+      },
+      "load_status": {
+        "name": "Load Status"
+      }
+    },
+    "number": {
+      "full_voltage": {
+        "name": "Full Voltage"
+      },
+      "cutoff_voltage": {
+        "name": "Cutoff Voltage"
+      },
+      "recovery_voltage": {
+        "name": "Recovery Voltage"
+      }
+    },
+    "select": {
+      "battery_type": {
+        "name": "Battery Type",
+        "state": {
+          "Lithium": "Lithium",
+          "Gel": "Gel",
+          "Lead-Acid": "Lead-Acid"
+        }
+      },
+      "output_mode": {
+        "name": "Output Mode"
+      },
+      "voltage_detect_mode": {
+        "name": "Voltage Detect Mode"
+      }
+    },
+    "switch": {
+      "load_switch": {
+        "name": "Manual Load Switch"
+      }
+    }
+  },
+  "title": "ZhiJinPower BLE"
+}
