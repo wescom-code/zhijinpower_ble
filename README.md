@@ -8,15 +8,14 @@
 [![issues](https://img.shields.io/github/issues/wescom-code/zhijinpower_ble)](https://github.com/wescom-code/zhijinpower_ble/issues)
 [![HACS](https://img.shields.io/badge/HACS-Default-orange.svg)](https://hacs.xyz)
 
-<img src="https://github.com/user-attachments/assets/5e20b236-603f-4f7a-a65e-38c98d9c9cfa" alt="Shenhua Heater banner" style="max-height:128px;" />
+<img src="https://github.com/user-attachments/assets/2ea17313-d1e3-45f3-8c1a-27fd1a8d437b" alt="Shenhua Heater banner" style="max-height:128px;" />
 
 本專案為 Home Assistant 的自訂整合（Custom Integration），透過本地藍牙（Bluetooth Low Energy）控制枝晉能源 (ZhiJinPower) APP的藍牙太陽能控制器，實現脫離雲端、完全本地化的智慧綠能監控。
 
 <p>
-  <img src="https://github.com/user-attachments/assets/28210625-d97c-47a8-801d-04f7a8b98b59" height="128" />
-  <img src="https://github.com/user-attachments/assets/90dc4209-20e3-43de-af1d-18977ce7aa2b" height="128" />
-  <img src="https://github.com/user-attachments/assets/021e7600-d84f-4ca6-9c49-e0b17e558db5" height="128" />
-  <img src="https://github.com/user-attachments/assets/f0ed8380-611b-4389-9496-29e69f60e7b4" height="128" />
+  <img src="https://github.com/user-attachments/assets/83d736d6-96a5-4286-b87d-a2c2176596f6" height="128" />
+  <img src="https://github.com/user-attachments/assets/02ae6dce-5dee-4208-be57-e536259240f4" height="128" />
+  <img src="https://github.com/user-attachments/assets/ca14491c-c82b-4d72-973b-f2a14388486e" height="128" />
 </p>
 
 ## 功能特點
@@ -35,9 +34,7 @@
   * **選單設定 (Select)**：電池類型 (鋰電池/膠體電池/鉛酸電池)、輸出模式 (手動/自動/定時/直出)、系統電壓偵測。
 
 <div>
-  <img src="https://github.com/user-attachments/assets/22398d1f-a1b0-422b-9f05-93418c0859a5" alt="HA Screenshot 1" height="360" />
-  <img src="https://github.com/user-attachments/assets/6c3497c0-fc44-484b-9b95-e6cc6792b4b3" alt="HA Screenshot 2" height="360" />
-  <img src="https://github.com/user-attachments/assets/89c32a11-ca72-4874-b6bf-e26578be585b" alt="HA Screenshot 3" height="360" />
+  <img src="https://github.com/user-attachments/assets/40be9394-c643-4936-a78e-2647f75722e7" alt="HA Screenshot 3" height="360" />
 </div>
 
 ## 安裝方式
