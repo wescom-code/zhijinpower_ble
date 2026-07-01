@@ -1,8 +1,9 @@
-from homeassistant.components.number import NumberEntity, NumberDeviceClass
+from homeassistant.components.number import NumberEntity, NumberDeviceClass, NumberMode
 from homeassistant.const import UnitOfElectricPotential, EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
 from .const import (
     DOMAIN,
@@ -40,14 +41,18 @@ class ZJBEVoltageNumber(CoordinatorEntity, NumberEntity):
         self._attr_native_min_value = min_val
         self._attr_native_max_value = max_val
         self._attr_native_step = 0.1
+        self._attr_mode = NumberMode.BOX
 
     @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self.coordinator.address)},
-            "name": "ZhiJinPower Solar Controller",
-            "manufacturer": "ZhiJinPower",
-        }
+    def device_info(self) -> DeviceInfo:
+        """Return device info."""
+        return DeviceInfo(
+            connections={(CONNECTION_BLUETOOTH, self.coordinator.address)},
+            identifiers={(DOMAIN, self.coordinator.address)},
+            name="ZhiJinPower Solar Controller",
+            manufacturer="ZhiJinPower",
+            model="ZJBE Bluetooth Solar Controller",
+        )
 
     @property
     def native_value(self):

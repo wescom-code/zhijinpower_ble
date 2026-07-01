@@ -2,6 +2,7 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
 from .const import DOMAIN, KEY_LOAD_SWITCH
 
@@ -30,12 +31,15 @@ class ZJBESwitch(CoordinatorEntity, SwitchEntity):
             self._attr_icon = icon
 
     @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self.coordinator.address)},
-            "name": "ZhiJinPower Solar Controller",
-            "manufacturer": "ZhiJinPower",
-        }
+    def device_info(self) -> DeviceInfo:
+        """Return device info."""
+        return DeviceInfo(
+            connections={(CONNECTION_BLUETOOTH, self.coordinator.address)},
+            identifiers={(DOMAIN, self.coordinator.address)},
+            name="ZhiJinPower Solar Controller",
+            manufacturer="ZhiJinPower",
+            model="ZJBE Bluetooth Solar Controller",
+        )
 
     @property
     def is_on(self):

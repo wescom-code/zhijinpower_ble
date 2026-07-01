@@ -2,7 +2,7 @@ from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySen
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
 from .const import (
     DOMAIN,
@@ -43,14 +43,15 @@ class ZJBEBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._attr_unique_id = f"{coordinator.address}_{key}"
 
     @property
-    def device_info(self):
+    def device_info(self) -> DeviceInfo:
         """Return device info."""
-        return {
-            "identifiers": {(DOMAIN, self.coordinator.address)},
-            "name": "ZhiJinPower Solar Controller",
-            "manufacturer": "ZhiJinPower",
-            "model": "ZJBE Bluetooth Solar Controller",
-        }
+        return DeviceInfo(
+            connections={(CONNECTION_BLUETOOTH, self.coordinator.address)},
+            identifiers={(DOMAIN, self.coordinator.address)},
+            name="ZhiJinPower Solar Controller",
+            manufacturer="ZhiJinPower",
+            model="ZJBE Bluetooth Solar Controller",
+        )
 
     @property
     def is_on(self):

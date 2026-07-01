@@ -3,6 +3,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
 from .const import (
     DOMAIN,
@@ -70,12 +71,15 @@ class ZJBESelect(CoordinatorEntity, SelectEntity):
             self._attr_icon = icon
 
     @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self.coordinator.address)},
-            "name": "ZhiJinPower Solar Controller",
-            "manufacturer": "ZhiJinPower",
-        }
+    def device_info(self) -> DeviceInfo:
+        """Return device info."""
+        return DeviceInfo(
+            connections={(CONNECTION_BLUETOOTH, self.coordinator.address)},
+            identifiers={(DOMAIN, self.coordinator.address)},
+            name="ZhiJinPower Solar Controller",
+            manufacturer="ZhiJinPower",
+            model="ZJBE Bluetooth Solar Controller",
+        )
 
     @property
     def current_option(self):
