@@ -52,6 +52,8 @@ class ZJBEClient:
         self._buffer = bytearray()
         self.data = {}
         self.device_address = 1
+        self._expected_func = None
+        self._expected_byte_count = None
 
     async def connect(self):
         if self._client and self._client.is_connected:
@@ -94,6 +96,23 @@ class ZJBEClient:
                 # Keep any remaining bytes in buffer
                 self._buffer = self._buffer[expected_len:]
                 
+                # Check if this frame matches what we are expecting
+                is_valid = True
+                if self._expected_func is None:
+                    is_valid = False
+                elif frame[1] != self._expected_func:
+                    is_valid = False
+                elif frame[1] == FUNC_READ_HOLDING and self._expected_byte_count is not None:
+                    if frame[2] != self._expected_byte_count:
+                        is_valid = False
+                
+                if not is_valid:
+                    LOGGER.warning(
+                        "Discarded stale/unsolicited Modbus packet: %s (expected func: %s, byte count: %s)", 
+                        frame.hex(), self._expected_func, self._expected_byte_count
+                    )
+                    continue
+                
                 calc_crc = crc16(frame[:-2])
                 if calc_crc == frame[-2:]:
                     self._last_response = bytes(frame)
@@ -103,7 +122,7 @@ class ZJBEClient:
             else:
                 break # Wait for more chunks
 
-    async def _send_command(self, func, start_reg, count_or_value, expect_length=None):
+    async def _send_command(self, func, start_reg, count_or_value, expect_byte_count=None):
         async with self._lock:
             if not self._client or not self._client.is_connected:
                 await self.connect()
@@ -115,6 +134,9 @@ class ZJBEClient:
             self._response_event.clear()
             self._last_response = None
             
+            self._expected_func = func
+            self._expected_byte_count = expect_byte_count
+            
             await self._client.write_gatt_char(WRITE_UUID, payload, response=False)
             
             try:
@@ -123,6 +145,9 @@ class ZJBEClient:
             except asyncio.TimeoutError:
                 LOGGER.warning("Timeout waiting for response from ZJBE")
                 return None
+            finally:
+                self._expected_func = None
+                self._expected_byte_count = None
 
     async def _send_write_multiple(self, start_reg, values: list[int]):
         async with self._lock:
@@ -141,6 +166,9 @@ class ZJBEClient:
             self._response_event.clear()
             self._last_response = None
             
+            self._expected_func = FUNC_WRITE_MULTIPLE
+            self._expected_byte_count = None
+            
             await self._client.write_gatt_char(WRITE_UUID, payload, response=False)
             
             try:
@@ -149,10 +177,13 @@ class ZJBEClient:
             except asyncio.TimeoutError:
                 LOGGER.warning("Timeout waiting for write response from ZJBE")
                 return None
+            finally:
+                self._expected_func = None
+                self._expected_byte_count = None
 
     async def update_telemetry(self):
         """Read address 1, count 16 (requested by app)"""
-        resp = await self._send_command(FUNC_READ_HOLDING, 0x0001, 16)
+        resp = await self._send_command(FUNC_READ_HOLDING, 0x0001, 16, expect_byte_count=20)
         if resp:
             # resp = [addr, func, length, data..., crc_l, crc_h]
             data = resp[3:-2]
@@ -183,7 +214,7 @@ class ZJBEClient:
 
     async def update_settings(self):
         """Read address 0x1001, count 15 (requested by app)"""
-        resp = await self._send_command(FUNC_READ_HOLDING, 0x1001, 15)
+        resp = await self._send_command(FUNC_READ_HOLDING, 0x1001, 15, expect_byte_count=18)
         if resp:
             data = resp[3:-2]
             if len(data) >= 18:
