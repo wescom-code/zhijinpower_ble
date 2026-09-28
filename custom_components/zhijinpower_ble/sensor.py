@@ -19,6 +19,7 @@ from .const import (
     DOMAIN,
     KEY_BATTERY_VOLTAGE,
     KEY_BATTERY_PERCENT,
+    KEY_HEALTHY_USABLE_BATTERY,
     KEY_CHARGE_CURRENT,
     KEY_SOLAR_POWER,
     KEY_DISCHARGE_CURRENT,
@@ -33,6 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     sensors = [
         ZJBESensor(coordinator, KEY_BATTERY_VOLTAGE, SensorDeviceClass.VOLTAGE, UnitOfElectricPotential.VOLT, SensorStateClass.MEASUREMENT),
         ZJBESensor(coordinator, KEY_BATTERY_PERCENT, SensorDeviceClass.BATTERY, PERCENTAGE, SensorStateClass.MEASUREMENT),
+        ZJBEHealthyBatterySensor(coordinator, KEY_HEALTHY_USABLE_BATTERY, SensorDeviceClass.BATTERY, PERCENTAGE, SensorStateClass.MEASUREMENT),
         ZJBESensor(coordinator, KEY_CHARGE_CURRENT, SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE, SensorStateClass.MEASUREMENT),
         ZJBESensor(coordinator, KEY_SOLAR_POWER, SensorDeviceClass.POWER, UnitOfPower.WATT, SensorStateClass.MEASUREMENT),
         ZJBESensor(coordinator, KEY_DISCHARGE_CURRENT, SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE, SensorStateClass.MEASUREMENT),
@@ -80,3 +82,36 @@ class ZJBEEnergySensor(ZJBESensor):
     def icon(self):
         """Return icon for generation."""
         return "mdi:solar-power"
+
+class ZJBEHealthyBatterySensor(ZJBESensor):
+    """Specific sensor for health-safe usable battery percentage with dynamic charging icon."""
+
+    @property
+    def icon(self):
+        """Return dynamic battery icon, showing charging status when charging."""
+        charging = self.coordinator.data.get(KEY_CHARGE_CURRENT, 0) > 0.1
+        val = self.native_value
+        if val is None:
+            return "mdi:battery-unknown"
+        val = int(round(val / 10.0) * 10)
+        val = max(0, min(100, val))
+        if charging:
+            if val == 0:
+                return "mdi:battery-charging-outline"
+            elif val == 100:
+                return "mdi:battery-charging-100"
+            return f"mdi:battery-charging-{val}"
+        else:
+            if val == 0:
+                return "mdi:battery-outline"
+            elif val == 100:
+                return "mdi:battery"
+            return f"mdi:battery-{val}"
+
+    @property
+    def extra_state_attributes(self):
+        """Return extra state attributes."""
+        attrs = {}
+        charging = self.coordinator.data.get(KEY_CHARGE_CURRENT, 0) > 0.1
+        attrs["charging"] = charging
+        return attrs

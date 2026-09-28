@@ -7,6 +7,9 @@
       "battery_percent": {
         "name": "Battery"
       },
+      "healthy_usable_battery": {
+        "name": "Healthy Usable Battery"
+      },
       "charge_current": {
         "name": "Charge Current"
       },

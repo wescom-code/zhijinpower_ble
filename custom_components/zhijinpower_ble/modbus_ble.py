@@ -11,6 +11,7 @@ from .const import (
     FUNC_WRITE_MULTIPLE,
     KEY_BATTERY_VOLTAGE,
     KEY_BATTERY_PERCENT,
+    KEY_HEALTHY_USABLE_BATTERY,
     KEY_SOLAR_POWER,
     KEY_CHARGE_CURRENT,
     KEY_DISCHARGE_CURRENT,
@@ -41,6 +42,57 @@ def crc16(data: bytes) -> bytes:
             else:
                 crc >>= 1
     return struct.pack("<H", crc)
+
+def calculate_healthy_usable_percent(voltage: float, battery_type: int) -> float:
+    """Calculate health-safe usable battery percentage based on chemistry.
+
+    12V systems (voltage <= 17V) normalized to 12V scale.
+    24V systems normalized to 12V scale by dividing by 2.
+    """
+    sys = 1 if voltage <= 17.0 else 2
+    v_norm = voltage / sys
+
+    # 1: Lithium, 2: Gel, 3: Lead-Acid (default to 3 if unknown)
+    if battery_type == 1:
+        # Lithium (LiFePO4 4S baseline: safe usable range ~12.2V - 13.4V)
+        if v_norm >= 13.4:
+            return 100.0
+        elif v_norm >= 13.2:
+            return 70.0 + (v_norm - 13.2) / 0.2 * 30.0
+        elif v_norm >= 13.0:
+            return 30.0 + (v_norm - 13.0) / 0.2 * 40.0
+        elif v_norm >= 12.2:
+            return 0.0 + (v_norm - 12.2) / 0.8 * 30.0
+        else:
+            return 0.0
+    elif battery_type == 2:
+        # Gel battery: safe 50-60% DoD limit around 11.9V, full rest around 12.8V
+        if v_norm >= 12.8:
+            return 100.0
+        elif v_norm >= 12.5:
+            return 75.0 + (v_norm - 12.5) / 0.3 * 25.0
+        elif v_norm >= 12.3:
+            return 45.0 + (v_norm - 12.3) / 0.2 * 30.0
+        elif v_norm >= 12.1:
+            return 15.0 + (v_norm - 12.1) / 0.2 * 30.0
+        elif v_norm >= 11.9:
+            return 0.0 + (v_norm - 11.9) / 0.2 * 15.0
+        else:
+            return 0.0
+    else:
+        # Lead-Acid (default): safe 50% DoD limit is 12.0V, full rest is 12.7V
+        if v_norm >= 12.7:
+            return 100.0
+        elif v_norm >= 12.5:
+            return 80.0 + (v_norm - 12.5) / 0.2 * 20.0
+        elif v_norm >= 12.3:
+            return 50.0 + (v_norm - 12.3) / 0.2 * 30.0
+        elif v_norm >= 12.1:
+            return 20.0 + (v_norm - 12.1) / 0.2 * 30.0
+        elif v_norm >= 12.0:
+            return 0.0 + (v_norm - 12.0) / 0.1 * 20.0
+        else:
+            return 0.0
 
 class ZJBEClient:
     def __init__(self, ble_device):
@@ -207,6 +259,10 @@ class ZJBEClient:
                 min_v = 9.0 * i
                 pct = ((v - min_v) / (max_v - min_v)) * 100.0
                 self.data[KEY_BATTERY_PERCENT] = max(0.0, min(100.0, pct))
+
+                # Calculate healthy usable battery percent
+                b_type = self.data.get(KEY_BATTERY_TYPE, 3)
+                self.data[KEY_HEALTHY_USABLE_BATTERY] = round(calculate_healthy_usable_percent(v, b_type), 1)
                 
                 # Calculate real-time charging power (W)
                 current = self.data[KEY_CHARGE_CURRENT]
@@ -227,6 +283,11 @@ class ZJBEClient:
                 self.data[KEY_LOAD_SWITCH] = struct.unpack_from(">H", data, 12)[0]
                 self.data[KEY_VOLTAGE_DETECT_MODE] = struct.unpack_from(">H", data, 14)[0]
                 self.data[KEY_RECOVERY_VOLTAGE] = struct.unpack_from(">H", data, 16)[0] / 10.0
+
+                # Recalculate healthy usable battery percent if voltage is available
+                if KEY_BATTERY_VOLTAGE in self.data:
+                    v = self.data[KEY_BATTERY_VOLTAGE]
+                    self.data[KEY_HEALTHY_USABLE_BATTERY] = round(calculate_healthy_usable_percent(v, self.data[KEY_BATTERY_TYPE]), 1)
 
     async def write_register(self, reg, value):
         """Write single register using function 16 (multiple) since device might expect that."""

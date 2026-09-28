@@ -23,6 +23,7 @@ FUNC_WRITE_MULTIPLE = 0x10
 # Keys for the parsed data dictionary
 KEY_BATTERY_VOLTAGE = "battery_voltage"
 KEY_BATTERY_PERCENT = "battery_percent"
+KEY_HEALTHY_USABLE_BATTERY = "healthy_usable_battery"
 KEY_CHARGE_CURRENT = "charge_current"
 KEY_SOLAR_POWER = "solar_power"
 KEY_DISCHARGE_CURRENT = "discharge_current"

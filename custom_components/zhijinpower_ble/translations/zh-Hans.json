@@ -7,6 +7,9 @@
       "battery_percent": {
         "name": "电池电量"
       },
+      "healthy_usable_battery": {
+        "name": "健康可用电量"
+      },
       "charge_current": {
         "name": "充电电流"
       },
