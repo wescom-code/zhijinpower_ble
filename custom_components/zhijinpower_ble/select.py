@@ -95,4 +95,5 @@ class ZJBESelect(CoordinatorEntity, SelectEntity):
             int_value = self._options_map_inv[option]
             await self.coordinator.client.write_register(self._register, int_value)
             # Refresh data
+            self.coordinator.force_settings_refresh = True
             await self.coordinator.async_request_refresh()

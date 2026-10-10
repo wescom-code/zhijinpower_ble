@@ -65,4 +65,5 @@ class ZJBEVoltageNumber(CoordinatorEntity, NumberEntity):
         int_value = int(value * 10)
         await self.coordinator.client.write_register(self._register, int_value)
         # Refresh data
+        self.coordinator.force_settings_refresh = True
         await self.coordinator.async_request_refresh()

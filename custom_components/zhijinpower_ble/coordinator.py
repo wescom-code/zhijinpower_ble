@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.components.bluetooth import async_ble_device_from_address
 
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, KEY_BATTERY_TYPE
 from .modbus_ble import ZJBEClient
 
 class ZJBEUpdateCoordinator(DataUpdateCoordinator):
@@ -16,7 +16,8 @@ class ZJBEUpdateCoordinator(DataUpdateCoordinator):
         """Initialize the coordinator."""
         self.address = address
         self.client = None
-        self._connected = False
+        self._poll_count = 0
+        self.force_settings_refresh = True
         
         super().__init__(
             hass,
@@ -27,26 +28,34 @@ class ZJBEUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Fetch data from device."""
-        if not self.client or not (self.client._client and self.client._client.is_connected):
-            ble_device = async_ble_device_from_address(self.hass, self.address, connectable=True)
-            if not ble_device:
-                raise UpdateFailed(f"Could not find ZJBE device with address {self.address}")
-            
-            if not self.client:
-                self.client = ZJBEClient(ble_device)
-            else:
-                self.client.ble_device = ble_device
+        ble_device = async_ble_device_from_address(self.hass, self.address, connectable=True)
+        if not ble_device:
+            # If device is not broadcasting, make sure we aren't holding a zombie client
+            if self.client:
+                await self.client.disconnect()
+            raise UpdateFailed(f"Could not find ZJBE device with address {self.address}")
+
+        if not self.client:
+            self.client = ZJBEClient(ble_device)
+        else:
+            self.client.ble_device = ble_device
 
         try:
             if not (self.client._client and self.client._client.is_connected):
                 await self.client.connect()
 
-            # Poll telemetry
+            # Poll real-time telemetry every 10s
             await self.client.update_telemetry()
-            # Poll settings
-            await self.client.update_settings()
+
+            # Poll static settings every 60s (every 6th poll) or on demand/initial run
+            self._poll_count += 1
+            if self._poll_count % 6 == 1 or self.force_settings_refresh or KEY_BATTERY_TYPE not in self.client.data:
+                await asyncio.sleep(0.3)  # Brief pause to allow peripheral buffer to clear
+                await self.client.update_settings()
+                self.force_settings_refresh = False
             
             return self.client.data
         except Exception as err:
-            await self.client.disconnect()
+            if self.client:
+                await self.client.disconnect()
             raise UpdateFailed(f"Error communicating with ZJBE: {err}")

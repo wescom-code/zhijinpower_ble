@@ -52,9 +52,11 @@ class ZJBESwitch(CoordinatorEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the switch on."""
         await self.coordinator.client.write_register(self._register, 1)
+        self.coordinator.force_settings_refresh = True
         await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
         await self.coordinator.client.write_register(self._register, 0)
+        self.coordinator.force_settings_refresh = True
         await self.coordinator.async_request_refresh()

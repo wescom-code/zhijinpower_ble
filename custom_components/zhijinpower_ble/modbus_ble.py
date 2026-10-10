@@ -1,7 +1,7 @@
 import asyncio
 import struct
 from bleak import BleakClient, BleakError
-from bleak_retry_connector import establish_connection
+from bleak_retry_connector import close_stale_connections_by_address, establish_connection
 from .const import (
     LOGGER,
     NOTIFY_UUID,
@@ -111,22 +111,40 @@ class ZJBEClient:
         if self._client and self._client.is_connected:
             return
         
+        try:
+            await close_stale_connections_by_address(self.ble_device.address)
+        except Exception:
+            pass
+
+        def _on_disconnected(client):
+            LOGGER.debug("ZJBE BLE disconnected: %s", self.ble_device.address)
+            self._client = None
+
         self._client = await establish_connection(
             client_class=BleakClient,
             device=self.ble_device,
-            name=self.ble_device.name,
-            disconnected_callback=None,
+            name=self.ble_device.name or self.ble_device.address,
+            disconnected_callback=_on_disconnected,
         )
         if self._client:
             await self._client.start_notify(NOTIFY_UUID, self._notification_handler)
 
     async def disconnect(self):
-        if self._client and self._client.is_connected:
+        client = self._client
+        self._client = None
+        if client:
             try:
-                await self._client.stop_notify(NOTIFY_UUID)
+                if client.is_connected:
+                    await client.stop_notify(NOTIFY_UUID)
             except Exception:
                 pass
-            await self._client.disconnect()
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
+        self._buffer.clear()
+        self._response_event.clear()
+        self._last_response = None
             
     def _notification_handler(self, sender, data: bytearray):
         self._buffer.extend(data)
@@ -192,7 +210,7 @@ class ZJBEClient:
             await self._client.write_gatt_char(WRITE_UUID, payload, response=False)
             
             try:
-                await asyncio.wait_for(self._response_event.wait(), timeout=10.0)
+                await asyncio.wait_for(self._response_event.wait(), timeout=4.0)
                 return self._last_response
             except asyncio.TimeoutError:
                 LOGGER.warning("Timeout waiting for response from ZJBE")
@@ -224,11 +242,13 @@ class ZJBEClient:
             await self._client.write_gatt_char(WRITE_UUID, payload, response=False)
             
             try:
-                await asyncio.wait_for(self._response_event.wait(), timeout=10.0)
+                await asyncio.wait_for(self._response_event.wait(), timeout=4.0)
+                if not self._last_response:
+                    raise TimeoutError("Timeout waiting for write response from ZJBE")
                 return self._last_response
             except asyncio.TimeoutError:
                 LOGGER.warning("Timeout waiting for write response from ZJBE")
-                return None
+                raise TimeoutError("Timeout waiting for write response from ZJBE")
             finally:
                 self._expected_func = None
                 self._expected_byte_count = None
@@ -236,44 +256,46 @@ class ZJBEClient:
     async def update_telemetry(self):
         """Read address 1, count 16 (requested by app)"""
         resp = await self._send_command(FUNC_READ_HOLDING, 0x0001, 16, expect_byte_count=20)
-        if resp:
-            # resp = [addr, func, length, data..., crc_l, crc_h]
-            data = resp[3:-2]
-            if len(data) >= 20:
-                self.data[KEY_BATTERY_VOLTAGE] = struct.unpack_from(">H", data, 2)[0] / 10.0
-                self.data[KEY_CHARGE_CURRENT] = struct.unpack_from(">H", data, 4)[0] / 10.0
-                self.data[KEY_DISCHARGE_CURRENT] = struct.unpack_from(">H", data, 6)[0] / 10.0
-                self.data[KEY_TEMPERATURE] = struct.unpack_from(">h", data, 8)[0] / 100.0  # Signed for temp
-                self.data[KEY_SOLAR_STATUS] = struct.unpack_from(">H", data, 10)[0]
-                self.data[KEY_LOAD_STATUS] = struct.unpack_from(">H", data, 12)[0]
-                self.data[KEY_WIND_STATUS] = struct.unpack_from(">H", data, 14)[0]
-                
-                # total generation is parsed from offset 16 (Register 8)
-                val_h = struct.unpack_from(">H", data, 16)[0]
-                self.data[KEY_TOTAL_GENERATION] = val_h / 10.0
+        if not resp:
+            raise TimeoutError("No response received for telemetry request")
+        # resp = [addr, func, length, data..., crc_l, crc_h]
+        data = resp[3:-2]
+        if len(data) >= 20:
+            self.data[KEY_BATTERY_VOLTAGE] = struct.unpack_from(">H", data, 2)[0] / 10.0
+            self.data[KEY_CHARGE_CURRENT] = struct.unpack_from(">H", data, 4)[0] / 10.0
+            self.data[KEY_DISCHARGE_CURRENT] = struct.unpack_from(">H", data, 6)[0] / 10.0
+            self.data[KEY_TEMPERATURE] = struct.unpack_from(">h", data, 8)[0] / 100.0  # Signed for temp
+            self.data[KEY_SOLAR_STATUS] = struct.unpack_from(">H", data, 10)[0]
+            self.data[KEY_LOAD_STATUS] = struct.unpack_from(">H", data, 12)[0]
+            self.data[KEY_WIND_STATUS] = struct.unpack_from(">H", data, 14)[0]
+            
+            # total generation is parsed from offset 16 (Register 8)
+            val_h = struct.unpack_from(">H", data, 16)[0]
+            self.data[KEY_TOTAL_GENERATION] = val_h / 10.0
 
-                # Calculate battery percent
-                v = self.data[KEY_BATTERY_VOLTAGE]
-                i = 1 if v <= 17 else 2
-                max_v = 12.6 * i
-                min_v = 9.0 * i
-                pct = ((v - min_v) / (max_v - min_v)) * 100.0
-                self.data[KEY_BATTERY_PERCENT] = max(0.0, min(100.0, pct))
+            # Calculate battery percent
+            v = self.data[KEY_BATTERY_VOLTAGE]
+            i = 1 if v <= 17 else 2
+            max_v = 12.6 * i
+            min_v = 9.0 * i
+            pct = ((v - min_v) / (max_v - min_v)) * 100.0
+            self.data[KEY_BATTERY_PERCENT] = max(0.0, min(100.0, pct))
 
-                # Calculate healthy usable battery percent
-                b_type = self.data.get(KEY_BATTERY_TYPE, 3)
-                self.data[KEY_HEALTHY_USABLE_BATTERY] = round(calculate_healthy_usable_percent(v, b_type), 1)
-                
-                # Calculate real-time charging power (W)
-                current = self.data[KEY_CHARGE_CURRENT]
-                self.data[KEY_SOLAR_POWER] = round(v * current, 1)
+            # Calculate healthy usable battery percent
+            b_type = self.data.get(KEY_BATTERY_TYPE, 3)
+            self.data[KEY_HEALTHY_USABLE_BATTERY] = round(calculate_healthy_usable_percent(v, b_type), 1)
+            
+            # Calculate real-time charging power (W)
+            current = self.data[KEY_CHARGE_CURRENT]
+            self.data[KEY_SOLAR_POWER] = round(v * current, 1)
 
     async def update_settings(self):
         """Read address 0x1001, count 15 (requested by app)"""
         resp = await self._send_command(FUNC_READ_HOLDING, 0x1001, 15, expect_byte_count=18)
-        if resp:
-            data = resp[3:-2]
-            if len(data) >= 18:
+        if not resp:
+            raise TimeoutError("No response received for settings request")
+        data = resp[3:-2]
+        if len(data) >= 18:
                 self.data[KEY_BATTERY_TYPE] = struct.unpack_from(">H", data, 0)[0]
                 self.data[KEY_TIME_HOUR] = struct.unpack_from(">H", data, 2)[0]
                 self.data[KEY_TIME_MIN] = struct.unpack_from(">H", data, 4)[0]
