@@ -27,8 +27,8 @@ This project is a Custom Integration for Home Assistant that allows you to contr
 * **Energy Dashboard Compatible**: Automatically calculates real-time solar charging power (W) under the hood, which can be perfectly integrated into the native HA Energy Dashboard via the HA Riemann sum integral.
 * **Multi-language Support**: Fully supports English, Traditional Chinese, and Simplified Chinese interfaces (i18n).
 * **Rich Entity Support**:
-  * **Sensors**: Battery Voltage (V), Battery Percentage (%), Charge Current (A), Discharge Current (A), Solar Power (W), Temperature (°C), Total Generation (Ah).
-  * **Binary Sensors**: Solar Status (Day/Night, native Light class), Wind Status, Load Status.
+  * **Sensors**: Battery Voltage (V), Battery Percentage (%), **Healthy Usable Battery (%)** (calculated via battery chemistry & safe 50% DoD threshold to protect battery lifespan, with dynamic charging bolt icons), Charge Current (A), Discharge Current (A), Solar Power (W), Temperature (°C), Total Generation (Ah).
+  * **Binary Sensors**: Solar Status (Day/Night, native Light class), Wind Status, Load Status, **Bluetooth Connectivity (Diagnostic entity that explicitly displays "Disconnected" upon signal loss)**.
   * **Switches**: Manual Load Switch.
   * **Numbers**: Full Voltage, Cutoff Voltage, Recovery Voltage.
   * **Selects**: Battery Type (Lithium / Gel / Lead-Acid), Output Mode (Manual / Auto / Timer / Direct), Voltage Detect Mode.
@@ -81,9 +81,11 @@ To integrate solar data into the HA Energy Dashboard:
 
 ## ⚠️ Notes
 
-- **Disconnection Mechanism**: Due to the physical limitations of Bluetooth connections, if the device loses power or is out of Bluetooth range, HA will mark the entities as `Unavailable` after timing out. Once the device reconnects, HA will automatically resume data updates.
-- **Exclusive Connection & Polling Interval**: This integration uses a standard exclusive BLE connection. Therefore, when Home Assistant successfully connects to the device, your official mobile APP will not be able to connect simultaneously (and vice versa, if the mobile APP is connected, HA will temporarily be unable to read data). To strike a balance between real-time performance and device stability, this integration defaults to polling the controller for the latest data every **10 seconds**.
-- **Write Latency**: When modifying settings or toggling switches, the command will be sent immediately via Modbus function code 0x10. The interface status will complete its final synchronization in the next polling cycle (within a maximum of 10 seconds).
+- **Disconnection Mechanism & Repairs Alert**: Due to the physical limitations of Bluetooth connections, if the device loses power or moves out of range, HA marks telemetry entities as `Unavailable`, while the diagnostic "Bluetooth Connectivity" entity explicitly reports `Disconnected`. If the disconnect persists for more than 3 minutes, an issue card is automatically posted to the HA Repairs dashboard and will self-resolve once the device reconnects.
+- **Exclusive Connection & Smart Polling**: This integration uses a standard exclusive BLE connection. When Home Assistant is connected, your official mobile app cannot connect simultaneously (and vice versa). To achieve the optimal balance between responsiveness and device stability:
+  - **Real-time telemetry** (voltage, current, power, status) polls every **10 seconds**.
+  - **Static settings** (voltage cutoffs, output modes) synchronize every **60 seconds** (or immediately upon user modification), dramatically reducing buffer load on low-power BLE microcontrollers.
+- **Write Latency**: When modifying settings or toggling switches, commands are sent immediately via Modbus function code 0x10 and synchronize immediately on the UI.
 
 ## ⚖️ Disclaimer
 
