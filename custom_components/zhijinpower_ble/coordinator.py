@@ -5,6 +5,11 @@ import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.components.bluetooth import async_ble_device_from_address
+from homeassistant.helpers.issue_registry import (
+    IssueSeverity,
+    async_create_issue,
+    async_delete_issue,
+)
 
 from .const import DOMAIN, LOGGER, KEY_BATTERY_TYPE
 from .modbus_ble import ZJBEClient
@@ -18,6 +23,7 @@ class ZJBEUpdateCoordinator(DataUpdateCoordinator):
         self.client = None
         self._poll_count = 0
         self.force_settings_refresh = True
+        self._consecutive_failures = 0
         
         super().__init__(
             hass,
@@ -33,6 +39,7 @@ class ZJBEUpdateCoordinator(DataUpdateCoordinator):
             # If device is not broadcasting, make sure we aren't holding a zombie client
             if self.client:
                 await self.client.disconnect()
+            self._handle_failure()
             raise UpdateFailed(f"Could not find ZJBE device with address {self.address}")
 
         if not self.client:
@@ -54,8 +61,35 @@ class ZJBEUpdateCoordinator(DataUpdateCoordinator):
                 await self.client.update_settings()
                 self.force_settings_refresh = False
             
+            self._handle_success()
             return self.client.data
         except Exception as err:
             if self.client:
                 await self.client.disconnect()
+            self._handle_failure()
             raise UpdateFailed(f"Error communicating with ZJBE: {err}")
+
+    def _handle_failure(self):
+        """Track consecutive failures and create repairs issue if offline too long."""
+        self._consecutive_failures += 1
+        # After 18 consecutive failed polls (approx. 3 minutes of offline), raise an issue
+        if self._consecutive_failures >= 18:
+            async_create_issue(
+                self.hass,
+                DOMAIN,
+                f"device_offline_{self.address}",
+                is_fixable=False,
+                severity=IssueSeverity.WARNING,
+                translation_key="device_offline",
+                translation_placeholders={"address": self.address},
+            )
+
+    def _handle_success(self):
+        """Reset failures and resolve repairs issue if previously created."""
+        if self._consecutive_failures > 0:
+            self._consecutive_failures = 0
+            async_delete_issue(
+                self.hass,
+                DOMAIN,
+                f"device_offline_{self.address}",
+            )

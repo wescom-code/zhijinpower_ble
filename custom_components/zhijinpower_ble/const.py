@@ -32,6 +32,7 @@ KEY_SOLAR_STATUS = "solar_status"
 KEY_LOAD_STATUS = "load_status"
 KEY_WIND_STATUS = "wind_status"
 KEY_TOTAL_GENERATION = "total_generation"
+KEY_CONNECTIVITY = "connectivity"
 
 KEY_BATTERY_TYPE = "battery_type"
 KEY_TIME_HOUR = "time_hour"

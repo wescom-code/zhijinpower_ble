@@ -35,6 +35,9 @@
       },
       "load_status": {
         "name": "負載狀態"
+      },
+      "connectivity": {
+        "name": "藍牙連線狀態"
       }
     },
     "number": {
@@ -74,6 +77,12 @@
       "load_switch": {
         "name": "負載開關"
       }
+    }
+  },
+  "issues": {
+    "device_offline": {
+      "title": "ZhiJinPower 太陽能控制器已斷線 ({address})",
+      "description": "控制器已持續超過 3 分鐘無法透過藍牙取得連線或通訊逾時。請檢查設備電源、是否超出藍牙通訊距離，或是手機 App 是否正在佔用連線。"
     }
   },
   "title": "ZhiJinPower BLE"

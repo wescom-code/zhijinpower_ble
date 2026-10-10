@@ -1,6 +1,7 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import Platform
+from homeassistant.helpers.issue_registry import async_delete_issue
 
 from .const import DOMAIN
 from .coordinator import ZJBEUpdateCoordinator
@@ -27,5 +28,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         coordinator = hass.data[DOMAIN].pop(entry.entry_id)
         if coordinator.client:
             await coordinator.client.disconnect()
+        async_delete_issue(hass, DOMAIN, f"device_offline_{entry.data['address']}")
             
     return unload_ok

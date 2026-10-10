@@ -35,6 +35,9 @@
       },
       "load_status": {
         "name": "Load Status"
+      },
+      "connectivity": {
+        "name": "Bluetooth Connectivity"
       }
     },
     "number": {
@@ -68,6 +71,12 @@
       "load_switch": {
         "name": "Manual Load Switch"
       }
+    }
+  },
+  "issues": {
+    "device_offline": {
+      "title": "ZhiJinPower Solar Controller offline ({address})",
+      "description": "The solar controller has been unable to communicate via Bluetooth for more than 3 minutes. Please check whether the controller has power, is within Bluetooth range, or if the mobile app is occupying the connection."
     }
   },
   "title": "ZhiJinPower BLE"
