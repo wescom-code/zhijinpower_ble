@@ -34,18 +34,20 @@ class ZJBEUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Fetch data from device."""
+        is_connected = bool(self.client and self.client._client and self.client._client.is_connected)
         ble_device = async_ble_device_from_address(self.hass, self.address, connectable=True)
-        if not ble_device:
-            # If device is not broadcasting, make sure we aren't holding a zombie client
+
+        if ble_device:
+            if not self.client:
+                self.client = ZJBEClient(ble_device)
+            else:
+                self.client.ble_device = ble_device
+        elif not is_connected:
+            # If device is not broadcasting and not already connected
             if self.client:
                 await self.client.disconnect()
             self._handle_failure()
             raise UpdateFailed(f"Could not find ZJBE device with address {self.address}")
-
-        if not self.client:
-            self.client = ZJBEClient(ble_device)
-        else:
-            self.client.ble_device = ble_device
 
         try:
             if not (self.client._client and self.client._client.is_connected):

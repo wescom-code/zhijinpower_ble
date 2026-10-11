@@ -210,7 +210,7 @@ class ZJBEClient:
             await self._client.write_gatt_char(WRITE_UUID, payload, response=False)
             
             try:
-                await asyncio.wait_for(self._response_event.wait(), timeout=4.0)
+                await asyncio.wait_for(self._response_event.wait(), timeout=7.0)
                 return self._last_response
             except asyncio.TimeoutError:
                 LOGGER.warning("Timeout waiting for response from ZJBE")
@@ -242,7 +242,7 @@ class ZJBEClient:
             await self._client.write_gatt_char(WRITE_UUID, payload, response=False)
             
             try:
-                await asyncio.wait_for(self._response_event.wait(), timeout=4.0)
+                await asyncio.wait_for(self._response_event.wait(), timeout=7.0)
                 if not self._last_response:
                     raise TimeoutError("Timeout waiting for write response from ZJBE")
                 return self._last_response
